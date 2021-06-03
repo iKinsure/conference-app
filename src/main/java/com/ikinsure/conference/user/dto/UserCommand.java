@@ -5,7 +5,7 @@ import javax.validation.constraints.*;
 /**
  * DTO class
  */
-public class UserCreateCommand {
+public class UserCommand {
 
     @NotNull(message = "Login cannot be empty")
     @NotEmpty(message = "Login cannot be empty")
@@ -17,7 +17,7 @@ public class UserCreateCommand {
     @Size(min = 5, max = 32, message = "Your login is not valid")
     private String login;
 
-    public UserCreateCommand() {
+    public UserCommand() {
     }
 
     public String getEmail() {

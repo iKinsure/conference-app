@@ -1,7 +1,6 @@
 package com.ikinsure.conference.user;
 
-import com.ikinsure.conference.user.dto.UserCreateCommand;
-import com.ikinsure.conference.user.dto.UserUpdateCommand;
+import com.ikinsure.conference.user.dto.UserCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,14 +19,14 @@ public class UserService {
         this.repository = repository;
     }
 
-    public User register(UserCreateCommand userCommand) {
+    public User register(UserCommand userCommand) {
         return repository.save(new User(
                 userCommand.getEmail(),
                 userCommand.getLogin()
         ));
     }
 
-    public User updateEmail(UUID id, UserUpdateCommand userCommand) {
+    public User updateEmail(UUID id, UserCommand userCommand) {
         User user = repository.findById(id).orElseThrow();
 
         if (!user.getLogin().equals(userCommand.getLogin())) {

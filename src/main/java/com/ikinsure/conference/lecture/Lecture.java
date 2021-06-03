@@ -1,13 +1,13 @@
 package com.ikinsure.conference.lecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ikinsure.conference.user.User;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -29,13 +29,18 @@ public class Lecture {
     @Column(nullable = false)
     private Category category;
 
+    @ManyToMany(mappedBy = "lectures", fetch = FetchType.LAZY)
+    private Set<User> users;
+
     public Lecture() {
     }
 
     public Lecture(String name, LocalTime startTime, LocalTime endTime, Category category) {
         this.name = name;
         this.startTime = startTime;
+        this.endTime = endTime;
         this.category = category;
+        this.users = new HashSet<>();
     }
 
     public UUID getId() {
@@ -78,4 +83,41 @@ public class Lecture {
         this.category = category;
     }
 
+    @JsonIgnore
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Lecture lecture = (Lecture) o;
+        return Objects.equals(id, lecture.id) &&
+                Objects.equals(name, lecture.name) &&
+                Objects.equals(startTime, lecture.startTime) &&
+                Objects.equals(endTime, lecture.endTime) &&
+                category == lecture.category;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, startTime, endTime, category);
+    }
+
+    @Override
+    public String toString() {
+        return "Lecture{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", category=" + category +
+                ", users=" + users +
+                '}';
+    }
 }

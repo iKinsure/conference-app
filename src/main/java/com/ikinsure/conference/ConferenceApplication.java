@@ -17,6 +17,7 @@ import java.util.List;
 public class ConferenceApplication {
 
     public static final Duration LECTURE_LENGTH = Duration.ofMinutes(90);
+    public static final int MAX_LECTURE_SIZE = 5;
 
     public static void main(String[] args) {
         SpringApplication.run(ConferenceApplication.class, args);

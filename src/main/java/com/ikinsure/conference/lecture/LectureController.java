@@ -2,6 +2,8 @@ package com.ikinsure.conference.lecture;
 
 import com.ikinsure.conference.user.dto.UserCommand;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,9 +27,19 @@ public class LectureController {
     }
 
     @PostMapping("/reserve/{lectureId}")
-    public void reserveLecture(@PathVariable UUID lectureId, @RequestBody @Valid UserCommand userCommand) {
+    public ResponseEntity<String> reserveLecture(
+            @PathVariable UUID lectureId,
+            @RequestBody @Valid UserCommand userCommand) {
         service.reserveLecture(userCommand, lectureId);
+        return ResponseEntity.ok("You have reserved lecture");
     }
 
+    @DeleteMapping("/reserve/{lectureId}")
+    public ResponseEntity<String> cancelReservation(
+            @PathVariable UUID lectureId,
+            @RequestBody @Valid UserCommand userCommand) {
+        service.cancelReservation(userCommand, lectureId);
+        return ResponseEntity.ok("You have cancelled reservation");
+    }
 
 }

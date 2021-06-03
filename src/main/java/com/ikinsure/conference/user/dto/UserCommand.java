@@ -7,14 +7,14 @@ import javax.validation.constraints.*;
  */
 public class UserCommand {
 
-    @NotNull(message = "Login cannot be empty")
-    @NotEmpty(message = "Login cannot be empty")
-    @Email(message = "Your email is not valid")
+    @NotNull(message = "{email.not-empty}")
+    @NotEmpty(message = "{email.not-empty}")
+    @Email(message = "{email.not-valid}")
     private String email;
 
-    @NotNull(message = "Login cannot be empty")
-    @NotEmpty(message = "Login cannot be empty")
-    @Size(min = 5, max = 32, message = "Your login is not valid")
+    @NotNull(message = "{login.not-empty}")
+    @NotEmpty(message = "{login.not-empty}")
+    @Size(min = 5, max = 32, message = "{login.not-valid}")
     private String login;
 
     public UserCommand() {

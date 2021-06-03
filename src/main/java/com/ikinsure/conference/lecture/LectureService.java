@@ -9,6 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,14 +37,7 @@ public class LectureService {
 
     public void reserveLecture(UserCommand userCommand, UUID lectureId) {
 
-        User user = userRepository
-                .findUserByLogin(userCommand.getLogin())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
-
-        if (!user.getEmail().equals(userCommand.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "User email is not valid");
-        }
-
+        User user = findUser(userCommand);
         Lecture lecture = lectureRepository
                 .findById(lectureId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lecture id does not exist"));
@@ -68,7 +67,50 @@ public class LectureService {
 
         lectureRepository.save(lecture);
         userRepository.save(user);
+
+        sendEmail(user, lecture);
     }
 
+    private void sendEmail(User user, Lecture lecture) {
+        try {
+            String text = "Data wysłania: " + LocalDateTime.now().toString() + "\n" +
+                    "Do: " + user.getEmail() + "\n" +
+                    "Treść: " + "Zarezerwowano prelekcje \"" + lecture.getName() + "\", która odbędzie się o " + lecture.getStartTime() + "\n\n";
+            Files.writeString(Paths.get("powiadomienia.txt"), text, StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void cancelReservation(UserCommand userCommand, UUID lectureId) {
+
+        User user = findUser(userCommand);
+        Lecture lecture = lectureRepository
+                .findById(lectureId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lecture id does not exist"));
+
+        Set<User> usersInLecture = lecture.getUsers();
+        Set<Lecture> userLectures = user.getLectures();
+
+        if (!usersInLecture.contains(user)) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "You have not joined this lecture");
+        }
+
+        usersInLecture.remove(user);
+        userLectures.remove(lecture);
+
+        lectureRepository.save(lecture);
+        userRepository.save(user);
+    }
+
+    private User findUser(UserCommand userCommand) {
+        User user = userRepository
+                .findUserByLogin(userCommand.getLogin())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+        if (!user.getEmail().equals(userCommand.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "User email is not valid");
+        }
+        return user;
+    }
 }
 

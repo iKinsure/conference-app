@@ -1,14 +1,16 @@
 package com.ikinsure.conference.user;
 
 import com.ikinsure.conference.user.dto.UserCreateCommand;
+import com.ikinsure.conference.user.dto.UserUpdateCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService service;
@@ -18,9 +20,19 @@ public class UserController {
         this.service = service;
     }
 
+    @GetMapping("")
+    public List<User> getAll() {
+        return service.getAll();
+    }
+
     @PostMapping(value = "/register")
-    public User registerUser(@RequestBody @Valid UserCreateCommand userCommand) {
+    public User create(@RequestBody @Valid UserCreateCommand userCommand) {
         return service.register(userCommand);
+    }
+
+    @PutMapping("/{id}")
+    public User update(@PathVariable UUID id, @RequestBody @Valid UserUpdateCommand userCommand) {
+        return service.updateEmail(id, userCommand);
     }
 
 }

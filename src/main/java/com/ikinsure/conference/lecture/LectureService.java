@@ -1,6 +1,7 @@
 package com.ikinsure.conference.lecture;
 
 import com.ikinsure.conference.ConferenceApplication;
+import com.ikinsure.conference.sender.Sender;
 import com.ikinsure.conference.user.User;
 import com.ikinsure.conference.user.UserRepository;
 import com.ikinsure.conference.user.dto.UserCommand;
@@ -9,11 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -24,11 +21,13 @@ public class LectureService {
 
     private final LectureRepository lectureRepository;
     private final UserRepository userRepository;
+    private final Sender sender;
 
     @Autowired
-    public LectureService(LectureRepository lectureRepository, UserRepository userRepository) {
+    public LectureService(LectureRepository lectureRepository, UserRepository userRepository, Sender sender) {
         this.lectureRepository = lectureRepository;
         this.userRepository = userRepository;
+        this.sender = sender;
     }
 
     public List<Lecture> getAll() {
@@ -68,18 +67,16 @@ public class LectureService {
         lectureRepository.save(lecture);
         userRepository.save(user);
 
-        sendEmail(user, lecture);
-    }
-
-    private void sendEmail(User user, Lecture lecture) {
-        try {
-            String text = "Data wysłania: " + LocalDateTime.now().toString() + "\n" +
-                    "Do: " + user.getEmail() + "\n" +
-                    "Treść: " + "Zarezerwowano prelekcje \"" + lecture.getName() + "\", która odbędzie się o " + lecture.getStartTime() + "\n\n";
-            Files.writeString(Paths.get("powiadomienia.txt"), text, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String filename = "powiadomienia.txt";
+        String pattern = "Data wysłania: {0}\nDo: {1}\nTreść: Zarezerwowano prelekcję \"{2}\", która odbędzie się o {3}.\n\n";
+        String text = MessageFormat.format(
+                pattern,
+                LocalDateTime.now(),
+                user.getEmail(),
+                lecture.getName(),
+                lecture.getStartTime()
+        );
+        sender.send(filename, text);
     }
 
     public void cancelReservation(UserCommand userCommand, UUID lectureId) {

@@ -1,14 +1,13 @@
 package com.ikinsure.conference.lecture;
 
 import com.ikinsure.conference.ConferenceApplication;
+import com.ikinsure.conference.exception.LocalisedException;
 import com.ikinsure.conference.sender.Sender;
 import com.ikinsure.conference.user.User;
 import com.ikinsure.conference.user.UserRepository;
 import com.ikinsure.conference.user.dto.UserCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -39,18 +38,18 @@ public class LectureService {
         User user = findUser(userCommand);
         Lecture lecture = lectureRepository
                 .findById(lectureId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lecture id does not exist"));
+                .orElseThrow(() -> new LocalisedException("lecture.not-exists"));
 
         Set<User> usersInLecture = lecture.getUsers();
         Set<Lecture> userLectures = user.getLectures();
 
         if (usersInLecture.contains(user) || userLectures.contains(lecture)) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "You have already joined this lecture");
+            throw new LocalisedException("reservation.joined");
         }
 
         System.out.println(usersInLecture.size());
         if (usersInLecture.size() >= ConferenceApplication.MAX_LECTURE_SIZE) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "This lecture is already full");
+            throw new LocalisedException("lecture.full");
         }
 
         long atThisTime = userLectures.stream()
@@ -58,7 +57,7 @@ public class LectureService {
                 .filter(time -> time.equals(lecture.getStartTime()))
                 .count();
         if (atThisTime > 0L) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "You have already lecture at this time");
+            throw new LocalisedException("reservation.already");
         }
 
         usersInLecture.add(user);
@@ -84,13 +83,13 @@ public class LectureService {
         User user = findUser(userCommand);
         Lecture lecture = lectureRepository
                 .findById(lectureId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lecture id does not exist"));
+                .orElseThrow(() -> new LocalisedException("lecture.not-exists"));
 
         Set<User> usersInLecture = lecture.getUsers();
         Set<Lecture> userLectures = user.getLectures();
 
         if (!usersInLecture.contains(user)) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "You have not joined this lecture");
+            throw new LocalisedException("reservation.not-joined");
         }
 
         usersInLecture.remove(user);
@@ -103,10 +102,12 @@ public class LectureService {
     private User findUser(UserCommand userCommand) {
         User user = userRepository
                 .findUserByLogin(userCommand.getLogin())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist"));
+                .orElseThrow(() -> new LocalisedException("user.not-exists"));
+
         if (!user.getEmail().equals(userCommand.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "User email is not valid");
+            throw new LocalisedException("email.not-match");
         }
+
         return user;
     }
 }

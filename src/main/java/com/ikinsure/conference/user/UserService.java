@@ -1,10 +1,9 @@
 package com.ikinsure.conference.user;
 
+import com.ikinsure.conference.exception.LocalisedException;
 import com.ikinsure.conference.user.dto.UserCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,17 +19,18 @@ public class UserService {
     }
 
     public User register(UserCommand userCommand) {
-        return repository.save(new User(
-                userCommand.getEmail(),
-                userCommand.getLogin()
-        ));
+
+
+        return repository.save(new User(userCommand.getEmail(), userCommand.getLogin()));
     }
 
     public User updateEmail(UUID id, UserCommand userCommand) {
-        User user = repository.findById(id).orElseThrow();
+        User user = repository
+                .findById(id)
+                .orElseThrow(() -> new LocalisedException("user.not-exists"));
 
         if (!user.getLogin().equals(userCommand.getLogin())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Login does not match");
+            throw new LocalisedException("login.not-match");
         }
 
         user.setEmail(userCommand.getEmail());

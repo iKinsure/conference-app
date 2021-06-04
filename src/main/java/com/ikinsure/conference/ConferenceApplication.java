@@ -16,13 +16,16 @@ import java.util.List;
 @SpringBootApplication
 public class ConferenceApplication {
 
-    public static final Duration LECTURE_LENGTH = Duration.ofMinutes(90);
+    public static final Duration LECTURE_LENGTH = Duration.ofMinutes(105);
     public static final int MAX_LECTURE_SIZE = 5;
 
     public static void main(String[] args) {
         SpringApplication.run(ConferenceApplication.class, args);
     }
 
+    /**
+     * Conference plan
+     */
     @Bean
     @Autowired
     CommandLineRunner init(LectureRepository repository) {
@@ -48,7 +51,5 @@ public class ConferenceApplication {
         );
         return args -> repository.saveAll(lectures);
     }
-
-
 
 }

@@ -9,11 +9,13 @@ public class UserCommand {
 
     @NotNull(message = "{email.not-empty}")
     @NotEmpty(message = "{email.not-empty}")
+    @NotBlank(message = "{email.not-empty}")
     @Email(message = "{email.not-valid}")
     private String email;
 
     @NotNull(message = "{login.not-empty}")
     @NotEmpty(message = "{login.not-empty}")
+    @NotBlank(message = "{login.not-empty}")
     @Size(min = 5, max = 32, message = "{login.not-valid}")
     private String login;
 

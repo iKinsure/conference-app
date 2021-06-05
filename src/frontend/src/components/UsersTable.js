@@ -8,7 +8,7 @@ class UsersTable extends React.Component {
                 <tr>
                     <th>Login</th>
                     <th>Email</th>
-                    <th>Number of reserved lectures</th>
+                    <th>Liczba zarezerwowanych prelekcji</th>
                 </tr>
                 {this.props.users.map((user, index) => {
                     return (

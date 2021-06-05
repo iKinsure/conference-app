@@ -7,10 +7,12 @@ class LectureTable extends React.Component {
                 <tbody>
 
                     <tr>
-                        <th>Category</th>
-                        <th>Name</th>
-                        <th>Start time</th>
-                        <th>End time</th>
+                        <th>Kategoria</th>
+                        <th>Nazwa</th>
+                        <th>Czas rozpoczęcia</th>
+                        <th>Koniec</th>
+                        <th>Dostępność</th>
+                        <th colSpan={2}>Zarządzaj</th>
                     </tr>
 
                     {this.props.lectures.map((lecture, index) => {
@@ -20,14 +22,15 @@ class LectureTable extends React.Component {
                                 <td>{lecture.name}</td>
                                 <td>{lecture.startTime}</td>
                                 <td>{lecture.endTime}</td>
+                                <td>{lecture.size + '/' + lecture.maxSize}</td>
                                 <td className={'buttonTable'}>
                                     <button onClick={event => this.props.onClick(event, lecture, 'POST')}>
-                                        Reserve
+                                        Zarezerwuj
                                     </button>
                                 </td>
                                 <td className={'buttonTable'}>
                                     <button onClick={event => this.props.onClick(event, lecture, 'DELETE')}>
-                                        Cancel
+                                        Anuluj
                                     </button>
                                 </td>
                             </tr>

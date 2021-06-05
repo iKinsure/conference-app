@@ -77,7 +77,7 @@ public class ReservationService {
         }
 
         // check capacity of lecture
-        if (usersInLecture.size() >= ConferenceApplication.MAX_LECTURE_SIZE) {
+        if (lecture.size() >= lecture.maxSize()) {
             throw new LocalisedException("lecture.full");
         }
 

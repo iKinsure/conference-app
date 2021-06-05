@@ -16,8 +16,6 @@ import java.util.List;
 @SpringBootApplication
 public class ConferenceApplication {
 
-    public static final int MAX_LECTURE_SIZE = 5;
-
     public static void main(String[] args) {
         SpringApplication.run(ConferenceApplication.class, args);
     }

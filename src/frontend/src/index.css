@@ -5,6 +5,11 @@ html {
     font-family: 'Roboto', sans-serif;
 }
 
+body {
+    margin: 0;
+    padding: 0;
+}
+
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
@@ -21,11 +26,23 @@ tr:nth-child(even) {
     background-color: #dddddd;
 }
 
+nav {
+    background-color: #3e4c8b;
+    color: white;
+}
+
 nav ul {
     display: flex;
+    justify-content: center;
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+
+@media only screen and (max-width: 800px) {
+    nav ul {
+        flex-direction: column;
+    }
 }
 
 nav li {
@@ -33,22 +50,16 @@ nav li {
     padding: 16px;
 }
 
-nav li:hover {
-    font-weight: bold;
-    background-color: lightgrey;
+.menuItem:hover {
+    background-color: #6474bd;
 }
 
 button {
+    border: none;
     text-align: center;
-    border: solid 1px black;
     width: 100%;
-    height: 32px;
-    display: block;
-    background-color: lightgrey;
-}
-
-button:nth-child(even) {
-    background-color: green;
+    height: 2em;
+    background-color: inherit;
 }
 
 button:hover {
@@ -59,3 +70,11 @@ button:hover {
     padding: 0;
 }
 
+h3 {
+    text-align: center;
+}
+
+p {
+    padding-left: 20vw;
+    padding-right: 20vw;
+}

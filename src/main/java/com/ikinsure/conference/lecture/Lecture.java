@@ -1,6 +1,8 @@
 package com.ikinsure.conference.lecture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ikinsure.conference.user.User;
 
 import javax.persistence.*;
@@ -12,6 +14,9 @@ import java.util.UUID;
 
 @Entity
 public class Lecture {
+
+    @Transient
+    private static final int MAX_SIZE = 5;
 
     @Id
     @GeneratedValue
@@ -41,6 +46,16 @@ public class Lecture {
         this.endTime = endTime;
         this.category = category;
         this.users = new HashSet<>();
+    }
+
+    @JsonProperty
+    public int size() {
+        return users.size();
+    }
+
+    @JsonProperty
+    public int maxSize() {
+        return MAX_SIZE;
     }
 
     public UUID getId() {

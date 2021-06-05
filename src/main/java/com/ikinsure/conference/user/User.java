@@ -15,7 +15,7 @@ public class User {
     @GeneratedValue
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
     @Column(unique = true, nullable = false, updatable = false)

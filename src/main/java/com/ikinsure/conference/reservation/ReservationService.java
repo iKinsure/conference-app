@@ -1,7 +1,9 @@
-package com.ikinsure.conference.lecture;
+package com.ikinsure.conference.reservation;
 
 import com.ikinsure.conference.ConferenceApplication;
 import com.ikinsure.conference.exception.LocalisedException;
+import com.ikinsure.conference.lecture.Lecture;
+import com.ikinsure.conference.lecture.LectureRepository;
 import com.ikinsure.conference.sender.Sender;
 import com.ikinsure.conference.user.User;
 import com.ikinsure.conference.user.UserRepository;
@@ -16,26 +18,52 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class LectureService {
+public class ReservationService {
 
     private final LectureRepository lectureRepository;
     private final UserRepository userRepository;
     private final Sender sender;
 
     @Autowired
-    public LectureService(LectureRepository lectureRepository, UserRepository userRepository, Sender sender) {
+    public ReservationService(LectureRepository lectureRepository,
+                              UserRepository userRepository,
+                              Sender sender) {
         this.lectureRepository = lectureRepository;
         this.userRepository = userRepository;
         this.sender = sender;
     }
 
-    public List<Lecture> getAll() {
+    public List<Lecture> getLectures() {
         return lectureRepository.findAll();
     }
 
-    public void reserveLecture(UserCommand userCommand, UUID lectureId) {
 
-        User user = findUser(userCommand);
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+    public Set<Lecture> getUserLectures(String login) {
+        User user = userRepository
+                .findUserByLogin(login)
+                .orElseThrow(() -> new LocalisedException("user.not-exists"));
+        return user.getLectures();
+    }
+
+    public void createReservation(UserCommand userCommand, UUID lectureId) {
+
+        // get user by login or create new if not exists
+        User user = userRepository
+                .findUserByLogin(userCommand.getLogin())
+                .orElseGet(() -> userRepository.save(new User(
+                        userCommand.getEmail(),
+                        userCommand.getLogin())
+                ));
+
+        // login is already taken
+        if (!user.getEmail().equals(userCommand.getEmail())) {
+            throw new LocalisedException("login.taken");
+        }
+
         Lecture lecture = lectureRepository
                 .findById(lectureId)
                 .orElseThrow(() -> new LocalisedException("lecture.not-exists"));
@@ -43,44 +71,51 @@ public class LectureService {
         Set<User> usersInLecture = lecture.getUsers();
         Set<Lecture> userLectures = user.getLectures();
 
+        // user already reserved
         if (usersInLecture.contains(user) || userLectures.contains(lecture)) {
             throw new LocalisedException("reservation.joined");
         }
 
-        System.out.println(usersInLecture.size());
+        // check capacity of lecture
         if (usersInLecture.size() >= ConferenceApplication.MAX_LECTURE_SIZE) {
             throw new LocalisedException("lecture.full");
         }
 
-        long atThisTime = userLectures.stream()
+        // check if user has reservation at this time
+        boolean atThisTime = userLectures.stream()
                 .map(Lecture::getStartTime)
-                .filter(time -> time.equals(lecture.getStartTime()))
-                .count();
-        if (atThisTime > 0L) {
+                .anyMatch(time -> time.equals(lecture.getStartTime()));
+        if (atThisTime) {
             throw new LocalisedException("reservation.already");
         }
 
+        // add reservation and save
         usersInLecture.add(user);
         userLectures.add(lecture);
-
         lectureRepository.save(lecture);
         userRepository.save(user);
 
-        String filename = "powiadomienia.txt";
-        String pattern = "Data wysłania: {0}\nDo: {1}\nTreść: Zarezerwowano prelekcję \"{2}\", która odbędzie się o {3}.\n\n";
+        // send confirmation email
         String text = MessageFormat.format(
-                pattern,
+                "Data wysłania: {0}\nDo: {1}\nTreść: Zarezerwowano prelekcję \"{2}\", która odbędzie się o {3}.\n\n",
                 LocalDateTime.now(),
                 user.getEmail(),
                 lecture.getName(),
                 lecture.getStartTime()
         );
-        sender.send(filename, text);
+        sender.send("powiadomienia.txt", text);
     }
 
-    public void cancelReservation(UserCommand userCommand, UUID lectureId) {
+    public Lecture deleteReservation(UserCommand userCommand, UUID lectureId) {
 
-        User user = findUser(userCommand);
+        User user = userRepository
+                .findUserByLogin(userCommand.getLogin())
+                .orElseThrow(() -> new LocalisedException("user.not-exists"));
+
+        if (!user.getEmail().equals(userCommand.getEmail())) {
+            throw new LocalisedException("email.not-match");
+        }
+
         Lecture lecture = lectureRepository
                 .findById(lectureId)
                 .orElseThrow(() -> new LocalisedException("lecture.not-exists"));
@@ -92,23 +127,19 @@ public class LectureService {
             throw new LocalisedException("reservation.not-joined");
         }
 
+        // delete reservation and save
         usersInLecture.remove(user);
         userLectures.remove(lecture);
-
-        lectureRepository.save(lecture);
         userRepository.save(user);
+        return lectureRepository.save(lecture);
     }
 
-    private User findUser(UserCommand userCommand) {
+    public User updateEmail(UserCommand userCommand) {
         User user = userRepository
                 .findUserByLogin(userCommand.getLogin())
                 .orElseThrow(() -> new LocalisedException("user.not-exists"));
-
-        if (!user.getEmail().equals(userCommand.getEmail())) {
-            throw new LocalisedException("email.not-match");
-        }
-
-        return user;
+        user.setEmail(userCommand.getEmail());
+        return userRepository.save(user);
     }
-}
 
+}

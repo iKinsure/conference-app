@@ -16,7 +16,6 @@ import java.util.List;
 @SpringBootApplication
 public class ConferenceApplication {
 
-    public static final Duration LECTURE_LENGTH = Duration.ofMinutes(105);
     public static final int MAX_LECTURE_SIZE = 5;
 
     public static void main(String[] args) {
@@ -30,23 +29,25 @@ public class ConferenceApplication {
     @Autowired
     CommandLineRunner init(LectureRepository repository) {
 
+        Duration length = Duration.ofMinutes(105);
+
         LocalTime t1 = LocalTime.of(10, 0);
         LocalTime t2 = LocalTime.of(12, 0);
         LocalTime t3 = LocalTime.of(14, 0);
 
         List<Lecture> lectures = List.of(
 
-                new Lecture("orange", t1, t1.plus(LECTURE_LENGTH), Category.A),
-                new Lecture("apple", t2, t2.plus(LECTURE_LENGTH), Category.A),
-                new Lecture("pineapple", t3, t3.plus(LECTURE_LENGTH), Category.A),
+                new Lecture("orange", t1, t1.plus(length), Category.A),
+                new Lecture("apple", t2, t2.plus(length), Category.A),
+                new Lecture("pineapple", t3, t3.plus(length), Category.A),
 
-                new Lecture("blue", t1, t1.plus(LECTURE_LENGTH), Category.B),
-                new Lecture("red", t2, t2.plus(LECTURE_LENGTH), Category.B),
-                new Lecture("green", t3, t3.plus(LECTURE_LENGTH), Category.B),
+                new Lecture("blue", t1, t1.plus(length), Category.B),
+                new Lecture("red", t2, t2.plus(length), Category.B),
+                new Lecture("green", t3, t3.plus(length), Category.B),
 
-                new Lecture("car", t1, t1.plus(LECTURE_LENGTH), Category.C),
-                new Lecture("train", t2, t2.plus(LECTURE_LENGTH), Category.C),
-                new Lecture("ship", t3, t3.plus(LECTURE_LENGTH), Category.C)
+                new Lecture("car", t1, t1.plus(length), Category.C),
+                new Lecture("train", t2, t2.plus(length), Category.C),
+                new Lecture("ship", t3, t3.plus(length), Category.C)
 
         );
         return args -> repository.saveAll(lectures);
